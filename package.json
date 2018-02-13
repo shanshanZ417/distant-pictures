@@ -19,8 +19,14 @@
   "dependencies": {
     "color-thief-browser": "^2.0.2",
     "express": "^4.16.2",
+    "fs": "0.0.1-security",
+    "get-gravatar": "^3.0.0",
+    "get-pixels": "^3.3.0",
     "node-webcam": "^0.4.3",
+    "posterize": "^1.0.2",
+    "save-pixels": "^2.3.4",
     "serialport": "^6.0.4",
-    "socket.io": "^2.0.4"
+    "socket.io": "^2.0.4",
+    "splashy": "^2.0.1"
   }
 }

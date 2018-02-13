@@ -28,8 +28,12 @@ var SerialPort = require('serialport'); // serial library
 var Readline = SerialPort.parsers.Readline; // read serial data as lines
 //-- Addition:
 var NodeWebcam = require( "node-webcam" );// load the webcam module
-var ColorThief = require("color-thief-browser"); // load the color thief module
-var colorthief = new ColorThief();
+
+var getPixels = require('get-pixels');
+var savePixels = require('save-pixels');
+var fs = require('fs');
+var posterize = require('posterize');
+
 var imageName; // maintain the global variable for the image path + name 
 
 //---------------------- WEBAPP SERVER SETUP ---------------------------------//
@@ -90,7 +94,12 @@ const parser = new Readline({
 serial.pipe(parser);
 parser.on('data', function(data) {
   console.log('Data:', data);
-  io.emit('takePicture');
+  //io.emit('takePicture');
+  imageName = new Date().toString().replace(/[&\/\\#,+()$~%.'":*?<>{}\s-]/g, '');
+  console.log('making a making a picture at'+ imageName); 
+  NodeWebcam.capture('public/'+imageName, opts, function( err, data ) {
+    io.emit('newPicture',(imageName+'.jpg')); 
+  });
   io.emit('server-msg', data);
 });
 //----------------------------------------------------------------------------//
@@ -132,11 +141,13 @@ io.on('connect', function(socket) {
 
   });
 
-  socket.on('thiefColor', function() {
+  socket.on('makePoster', function() {
     console.log('public/'+ imageName + '.jpg');
-    // var r, g, b = colorthief.getColor('public/'+ imageName + '.jpg');
-    var r, g, b = colorthief.getColor('public/SunFeb112018215657GMT0500EST.jpg');
-    io.emit('mainColor', (r,g,b));
+    getPixels('public/'+ imageName + '.jpg', function(err, pixels) {
+      var poster = posterize(pixels, 3);
+      savePixels(poster, 'jpg').pipe(fs.createWriteStream('public/poster.jpg'));
+    });
+    io.emit('posterFilter', 'poster.jpg');
   });
   // if you get the 'disconnect' message, say the user disconnected
   socket.on('disconnect', function() {
