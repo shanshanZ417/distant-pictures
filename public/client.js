@@ -29,10 +29,17 @@ function takePicture(){
   socket.emit('takePicture');
 }
 
+function thiefColor(){
+  socket.emit('thiefColor');
+}
 //-- Addition: This function receives the new image name and applies it to html element.
 
 socket.on('newPicture', function(msg) {
   document.getElementById('pictureContainer').src=msg;
+});
+
+socket.on('mainColor', function(r,g,b) {
+  document.getElementById("rectSVG").setAttribute("fill", rgb(r,g,b));
 });
 // read the data from the message that the server sent and change the
 // background of the webpage based on the data in the message

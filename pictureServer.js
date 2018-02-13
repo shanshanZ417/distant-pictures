@@ -28,6 +28,9 @@ var SerialPort = require('serialport'); // serial library
 var Readline = SerialPort.parsers.Readline; // read serial data as lines
 //-- Addition:
 var NodeWebcam = require( "node-webcam" );// load the webcam module
+var ColorThief = require("color-thief-browser"); // load the color thief module
+var colorthief = new ColorThief();
+var imageName; // maintain the global variable for the image path + name 
 
 //---------------------- WEBAPP SERVER SETUP ---------------------------------//
 // use express to create the simple webapp
@@ -87,6 +90,7 @@ const parser = new Readline({
 serial.pipe(parser);
 parser.on('data', function(data) {
   console.log('Data:', data);
+  io.emit('takePicture');
   io.emit('server-msg', data);
 });
 //----------------------------------------------------------------------------//
@@ -115,7 +119,7 @@ io.on('connect', function(socket) {
     /// First, we create a name for the new picture.
     /// The .replace() function removes all special characters from the date.
     /// This way we can use it as the filename.
-    var imageName = new Date().toString().replace(/[&\/\\#,+()$~%.'":*?<>{}\s-]/g, '');
+    imageName = new Date().toString().replace(/[&\/\\#,+()$~%.'":*?<>{}\s-]/g, '');
 
     console.log('making a making a picture at'+ imageName); // Second, the name is logged to the console.
 
@@ -123,8 +127,16 @@ io.on('connect', function(socket) {
     NodeWebcam.capture('public/'+imageName, opts, function( err, data ) {
     io.emit('newPicture',(imageName+'.jpg')); ///Lastly, the new name is send to the client web browser.
     /// The browser will take this new name and load the picture from the public folder.
+  
   });
 
+  });
+
+  socket.on('thiefColor', function() {
+    console.log('public/'+ imageName + '.jpg');
+    // var r, g, b = colorthief.getColor('public/'+ imageName + '.jpg');
+    var r, g, b = colorthief.getColor('public/SunFeb112018215657GMT0500EST.jpg');
+    io.emit('mainColor', (r,g,b));
   });
   // if you get the 'disconnect' message, say the user disconnected
   socket.on('disconnect', function() {
